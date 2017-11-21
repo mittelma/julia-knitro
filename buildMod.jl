@@ -1,4 +1,4 @@
-# model of the ARPA-E Competition
+# model for ARPA-E Competition Phase 0
 #
 # getting constraint violations for real and reactive power balance at all buses
 # in the base case and all contingency cases.
@@ -30,10 +30,14 @@
 #
 # these observations are all without any pv/pq switching in the model.
 
+using Complementarity;
+#using Ipopt;
+using KNITRO;
 #using Ipopt, Complementarity;
-using KNITRO, Complementarity;
 
-function buildMod(fData,uData)
+# Global: contDList
+
+function buildMod(fData,uData, contDList)
   # Input:
   # fData - grid data with all parameters
   # uData - contingency data
@@ -53,16 +57,24 @@ function buildMod(fData,uData)
   contData = uData.contDList;
 
   # set up the model
-  #mp = Model(solver = IpoptSolver());
-  mp = Model(solver = KnitroSolver(
-			feastol=1e-8,
-			opttol=1e-4,
-			ftol=1e-4,
-			ftol_iters=3,
-			pivot=1e-12,
-			maxtime_real=10800,
-			maxcgit=10));
-
+  #mp = Model(solver = IpoptSolver(print_level=0));
+  mp = Model(solver = KnitroSolver(KTR_PARAM_OUTLEV=2,  # default is 2
+   			feastol=2.25e-9, 
+   			#feastol_abs=1e-2,
+   			opttol=1e-4, 
+   			cg_maxit=10,   # formerly maxcgit
+   			maxit=400,
+   			ftol=1e-4, 
+   			#ftol_iters=3, 
+   			#pivot=1e-12,
+        #ms_enable=1,
+        #ms_maxsolves=5,
+        #ms_maxbndrange=10,
+        #ms_terminate=1,
+        #par_numthreads=24,
+        #par_concurrent_evals=0,
+   			maxtime_real=3600)); 
+  
   # create the variables for the base case
   @variable(mp,bData[i].Vmin <= v0[i in bList] <= bData[i].Vmax);
   @variable(mp,gData[l].Pmin <= sp0[l in gList] <= gData[l].Pmax);

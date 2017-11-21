@@ -1,13 +1,18 @@
-# data processing for ARPA-E Competition
+# data processing for ARPA-E Competition Phase 0
 
 # preprocessing: read in the data and divide it into segments
-function preProc(fileAdd)
-  rawData = readdlm(fileAdd, ',', skipblanks=false); # don't skip blank lines in header
+function preProc(rawFile)
+  rawData = readdlm(rawFile,',', skipblanks=false); 
 
   # separate the data into different segments
-  titleLine = rawData[1,:];
+  titleLine1 = rawData[1,:];
+#  println("titleLine1: ",titleLine1);
+  titleLine2 = rawData[2,:];
+#  println("titleLine2: ",titleLine2);
+  titleLine3 = rawData[3,:];
+#  println("titleLine3: ",titleLine3);  
   n,m = size(rawData);
-  busStartL = 4; # RAW files have 3 header records
+  busStartL = 4; # first three lines are headers
   busEndL = 0
   loadStartL = 0
   loadEndL = 0
@@ -47,6 +52,7 @@ function preProc(fileAdd)
 
   baseMVA = rawData[1,2];
   busSeg = rawData[busStartL:busEndL,:];
+#  println("busSeg: ",busSeg);  
   loadSeg = rawData[loadStartL:loadEndL,:];
   shuntSeg = rawData[shuntStartL:shuntEndL,:];
   genSeg = rawData[genStartL:genEndL,:];
@@ -70,11 +76,16 @@ function busgenProc(baseMVA,busSeg,shuntSeg,loadSeg,genSeg,genFile)
   for i in 1:bn
     # build the bus item
     busID = busSeg[i,1];
+#  println("busID: ",busID);      
     push!(busList,busID);
     busName = string(busSeg[i,2]);
+#  println("busName: ",busName);              
     busVmax = busSeg[i,10];
+#  println("busVmax: ",busVmax);              
     busVmin = busSeg[i,11];
+#  println("busVmin: ",busVmin);              
     busItem = busData(busID,busName,[],busVmax,busVmin,0,0,0,0);
+#  println("busItem: ",busItem);              
 
     # add the bus item to the dictionary
     busDList[busID] = busItem;
@@ -98,6 +109,9 @@ function busgenProc(baseMVA,busSeg,shuntSeg,loadSeg,genSeg,genFile)
   genCostData,genCostTitle = readdlm(genFile,',',header = true);
   gcn,gcm = size(genCostData);
   genCost = Dict();
+#  println("gcn: ",gcn); 
+#  println("gcm: ",gcm); 
+#  println("genCostData: ",genCostData); 
   for i in 1:gcn
     if !((genCostData[i,1],genCostData[i,2]) in keys(genCost))
       genCost[(genCostData[i,1],genCostData[i,2])] = Dict();
