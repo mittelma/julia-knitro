@@ -69,6 +69,7 @@ function buildMod(fData,uData, contDList)
    			#pivot=1e-12,
 			bar_initmu=.12,
 			bar_feasible=1,
+			honorbnds=1,
         #ms_enable=1,
         #ms_maxsolves=5,
         #ms_maxbndrange=10,
